@@ -207,58 +207,27 @@
         let isStockFilterActive = false;
         
         // --- FUNÇÕES DE API E ESTOQUE ---
-        async function loadInventory() {
-            if (!SCRIPT_API_URL.includes("macros.google.com")) {
-                alert("URL da API não configurada. Edite o arquivo index.html e insira a URL do seu App Script.");
-                loadingOverlay.innerHTML = "<p class='text-red-600 font-bold'>Erro: API não configurada.</p>";
-                return;
-            }
+       async function loadInventory() {
+    try {
+        const response = await fetch(SCRIPT_API_URL);
+        const stockData = await response.json();
 
-            try {
-                const response = await fetch(SCRIPT_API_URL);
-                if (!response.ok) {
-                    throw new Error(`Erro na rede: ${response.statusText}`);
+        // Atualiza o 'inventoryData' local com os dados da planilha
+        for (const category in inventoryData) {
+            inventoryData[category].forEach(item => {
+                if (stockData[item.name] !== undefined) {
+                    item.stock = parseInt(stockData[item.name], 10);
+                } else {
+                    item.stock = 0; // Se não estiver na planilha, não tem estoque
                 }
-                const stockData = await response.json();
-
-                if (stockData.error) {
-                    throw new Error(`Erro no script da API: ${stockData.error}`);
-                }
-                
-                for (const category in menuData) {
-                    menuData[category].forEach(item => {
-                        if (stockData[item.name] !== undefined) {
-                            item.stock = parseInt(stockData[item.name], 10) || 0;
-                        } else {
-                            item.stock = 0;
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error("Erro ao buscar o estoque:", error);
-                alert("Não foi possível carregar o estoque. O cardápio será exibido como 'sem estoque'. Tente recarregar a página.");
-            } finally {
-                loadingOverlay.style.display = 'none';
-                renderMenu();
-                updateTotals();
-            }
+            });
         }
-        
-        async function logOrderToSheet(orderPayload) {
-            try {
-                await fetch(SCRIPT_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Importante para evitar erros de CORS com Apps Script
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(orderPayload)
-                });
-            } catch (error) {
-                console.error("Não foi possível registrar o pedido na planilha:", error);
-                // Opcional: informar ao usuário que o pedido foi pro WhatsApp mas não foi salvo no sistema.
-            }
-        }
+        renderMenu(); // Renderiza o menu com o estoque atualizado
+    } catch (error) {
+        console.error("Erro ao buscar o estoque:", error);
+        alert("Não foi possível carregar o estoque. Tente recarregar a página.");
+    }
+}
 
         // --- FUNÇÕES PRINCIPAIS ---
         function renderMenu() {
@@ -457,7 +426,4 @@
 
     </script>
 </body>
-
 </html>
-
-
