@@ -212,9 +212,9 @@
         const response = await fetch(SCRIPT_API_URL);
         const stockData = await response.json();
 
-        // Atualiza o 'inventoryData' local com os dados da planilha
-        for (const category in inventoryData) {
-            inventoryData[category].forEach(item => {
+        // Atualiza o 'menuData' local com os dados da planilha
+        for (const category in menuData) {
+            menuData[category].forEach(item => {
                 if (stockData[item.name] !== undefined) {
                     item.stock = parseInt(stockData[item.name], 10);
                 } else {
