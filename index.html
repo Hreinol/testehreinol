@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HS Cozinha Caseira Cardápio de Marmitas Saudáveis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        .form-input:focus, .form-radio:focus, .form-textarea:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+            outline: none;
+        }
+        .form-radio { color: #22c55e; }
+        .stock-low { color: #ef4444; } /* red-500 */
+        .stock-ok { color: #84cc16; } /* lime-500 */
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="text-center">
+            <p class="text-lg font-semibold text-gray-700">Carregando estoque do dia...</p>
+            <p class="text-sm text-gray-500">Aguarde um momento.</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-2xl p-4 sm:p-6 pb-48">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-green-700">HS Cozinha Caseira</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-green-700">Cardápio Marmitinhas Saudáveis</h1>
+            <p class="text-gray-600 mt-2">Escolha os pratos, preencha seus dados e forma de pagamento para pedir.</p>
+            <p class="text-gray-600 mt-2">Cardápio com as opções personalizáveis por encomenda!!</p>
+            <div class="mt-4">
+                <button id="toggle-stock-filter" class="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-amber-600 transition-colors w-full sm:w-auto">
+                    Mostrar Apenas Pronta Entrega
+                </button>
+            </div>
+        </header>
+
+        <div class="bg-white p-4 rounded-xl shadow-md mb-8 border border-green-200">
+            <div class="flex justify-around items-center text-center">
+                <div>
+                    <p class="font-semibold text-lg text-gray-700">Valor Unitário</p>
+                    <p class="text-2xl font-bold text-green-600">R$22,90</p>
+                </div>
+                <div class="border-l h-12 border-gray-200"></div>
+                <div>
+                    <p class="font-semibold text-lg text-gray-700">Combo (5+)</p>
+                    <p class="text-2xl font-bold text-green-600">R$21,90</p>
+                    <p class="text-xs text-gray-500">por unidade</p>
+                </div>
+            </div>
+            <p class="text-center text-xs text-gray-500 mt-3">Cada marmita tem aprox. 320g, com ingredientes 100% naturais.</p>
+        </div>
+
+        <div id="menu-container" class="space-y-8">
+            </div>
+        
+        <div id="customer-form" class="mt-10">
+            <h2 class="text-2xl font-bold text-green-800 border-b-2 border-green-200 pb-2 mb-4">Seus Dados para Entrega</h2>
+            <div class="space-y-4 bg-white p-6 rounded-lg shadow-sm border">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                    <input type="text" id="name" name="name" class="form-input w-full rounded-md border-gray-300 shadow-sm transition" placeholder="Digite seu nome">
+                </div>
+                <div>
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+                    <input type="text" id="address" name="address" class="form-input w-full rounded-md border-gray-300 shadow-sm transition" placeholder="Rua, Avenida, etc.">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="number" class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                        <input type="text" id="number" name="number" class="form-input w-full rounded-md border-gray-300 shadow-sm transition" placeholder="Ex: 123">
+                    </div>
+                    <div>
+                        <label for="complement" class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                        <input type="text" id="complement" name="complement" class="form-input w-full rounded-md border-gray-300 shadow-sm transition" placeholder="Apto, bloco, etc.">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="payment-form" class="mt-10">
+            <h2 class="text-2xl font-bold text-green-800 border-b-2 border-green-200 pb-2 mb-4">Forma de Pagamento</h2>
+            <div class="space-y-4 bg-white p-6 rounded-lg shadow-sm border">
+                <div class="space-y-3">
+                    <label class="flex items-center"><input type="radio" name="payment" value="Cartão de Crédito" class="form-radio h-4 w-4 transition"><span class="ml-3 text-gray-700">Cartão de Crédito</span></label>
+                    <label class="flex items-center"><input type="radio" name="payment" value="Cartão de Débito" class="form-radio h-4 w-4 transition"><span class="ml-3 text-gray-700">Cartão de Débito</span></label>
+                    <label class="flex items-center"><input type="radio" name="payment" value="Dinheiro" class="form-radio h-4 w-4 transition"><span class="ml-3 text-gray-700">Dinheiro</span></label>
+                    <div id="change-option" class="hidden pl-7 mt-2 space-y-2">
+                        <input type="text" id="change-for" class="form-input w-full rounded-md border-gray-300 shadow-sm transition" placeholder="Precisa de troco para quanto? (Opcional)">
+                        <div id="change-calculation" class="hidden text-sm p-3 bg-blue-50 rounded-md border border-blue-200 text-blue-800"></div>
+                    </div>
+                    <label class="flex items-center"><input type="radio" name="payment" value="PIX" class="form-radio h-4 w-4 transition"><span class="ml-3 text-gray-700">PIX</span></label>
+                    <div id="pix-info" class="hidden pl-7 mt-2 text-sm p-3 bg-green-50 rounded-md border border-green-200">
+                        <p class="font-semibold">Chave PIX (Celular):</p><p class="text-green-800">11999838162</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 p-4 shadow-lg-top">
+        <div class="container mx-auto max-w-2xl">
+            <div class="flex justify-between items-center">
+                <div class="text-left">
+                    <p class="font-semibold text-gray-700">Total:</p>
+                    <p id="total-price" class="text-2xl font-bold text-green-700">R$ 0,00</p>
+                    <p id="total-items" class="text-xs text-gray-500">0 itens no carrinho</p>
+                </div>
+                <button id="order-button" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+                    Fazer Pedido
+                </button>
+            </div>
+             <div class="mt-3 text-center">
+                <button id="download-menu-button" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+                    Baixar Cardápio
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONFIGURAÇÕES ---
+        const SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbxJZ2_woAy5-CoAUzMnuaAD56vLVKD3ImX4iLI2m3SCr2c3F68iAjw7siLdSq1LpATwPQ/exec";
+        const phoneNumber = "5511999838162";
+        const priceUnit = 22.90;
+        const priceCombo = 21.90;
+        const comboMinItems = 5;
+
+        // ESTRUTURA BASE DO CARDÁPIO (O estoque será preenchido pela API)
+        let menuData = {
+            "Pratos Principais": [
+                { name: "Lasanha de Frango", desc: "Frango cremoso desfiado e muçarela.", stock: 0 },
+                { name: "Lasanha de Berinjela", desc: "Molho a bolonhesa.", stock: 0 },
+                { name: "Strogonoff de Frango", desc: "Arroz e batata sauté.", stock: 0 },
+                { name: "Picadinho Bovino", desc: "Arroz e feijão.", stock: 0 },
+                { name: "Filé de Sobrecoxa Assada", desc: "Arroz com legumes e legumes no vapor.", stock: 0 },
+                { name: "Carne de Panela", desc: "Purê de abóbora e mix legumes assados.", stock: 0 },
+                { name: "Carne Moída c/ Purê Mandioquinha", desc: "Purê de mandioquinha/batata e legumes no vapor.", stock: 0 },
+                { name: "Carne Moída c/ Purê Abóbora", desc: "Purê de abóbora e legumes no vapor.", stock: 0 },
+                { name: "Carne Moída c/ Legumes", desc: "Arroz e legumes no vapor.", stock: 0 },
+                { name: "Filé de Frango Grelhado", desc: "Molho branco, queijo, arroz integral e legumes assados.", stock: 0 },
+                { name: "Frango em Cubos Grelhado", desc: "Couve Flor com Molho branco Gratinado, cenoura e vagem no vapor.", stock: 0 },
+                { name: "Galinhada Fit", desc: "Arroz integral e cubos de frango.", stock: 0 },
+                { name: "Rocambole de Carne Moída", desc: "Recheado com queijo e tomate seco, arroz e legumes no vapor.", stock: 0 },
+                { name: "Filé de Tilápia Grelhada", desc: "Arroz integral, brócolis e cenoura no vapor.", stock: 0 },
+                { name: "Abobrinha Recheada c/ Carne", desc: "Carne moída, queijo e arroz integral.", stock: 0 },
+                { name: "Abobrinha Recheada c/ Frango", desc: "Frango desfiado, queijo e arroz integral.", stock: 0 },
+                { name: "Frango Desfiado", desc: "Purê de Mandioquinha e batata, cenoura e vagem no vapor.", stock: 0 }
+            ],
+            "Massas e Tortas": [
+                { name: "Mini Panquecas de Frango", desc: "Molho ao sugo e queijo - Massa de couve, beterraba ou cenoura (sem glúten).", stock: 0 },
+                { name: "Panqueca Tradicional", desc: "Ricota com espinafre c/ molho ao sugo.", stock: 0 },
+                { name: "Torta de Frango", desc: "Frango desfiado com molho e milho verde.", stock: 0 },
+                { name: "Nhoque de Batata c/ Tomate Seco", desc: "Recheado com queijo e tomate seco. Molho ao sugo (sem glúten).", stock: 0 },
+                { name: "Nhoque de Batata c/ Mussarela", desc: "Recheado com queijo. Molho ao sugo (sem glúten).", stock: 0 },
+                { name: "Nhoque de Batata c/ Provolone", desc: "Recheado com provolone. Molho ao sugo (sem glúten).", stock: 0 },
+                { name: "Macarrão à Bolonhesa", desc: "Macarrão ao molho bolonhesa.", stock: 0 }
+            ],
+            "Caldos e Sopas": [
+                { name: "Caldo de Abóbora c/ Carne Seca", desc: "Alho poró e carne seca desfiada (caseira).", stock: 0 },
+                { name: "Caldo de Abóbora c/ Frango", desc: "Alho poró e frango desfiado.", stock: 0 },
+                { name: "Caldo de Legumes", desc: "Legumes frescos.", stock: 0 },
+                { name: "Caldo de Legumes c/ Frango", desc: "Legumes frescos e Frango Desfiado.", stock: 0 },
+                { name: "Caldo Verde", desc: "Batata, calabresa, bacon e couve verde.", stock: 0 },
+                { name: "Sopa de Legumes com Carne", desc: "Nutritiva e saborosa.", stock: 0 }
+            ]
+        };
+
+        // --- ELEMENTOS DO DOM E ESTADO ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const menuContainer = document.getElementById('menu-container');
+        const toggleStockFilterBtn = document.getElementById('toggle-stock-filter');
+        const totalPriceEl = document.getElementById('total-price');
+        const totalItemsEl = document.getElementById('total-items');
+        const orderButton = document.getElementById('order-button');
+        const downloadMenuButton = document.getElementById('download-menu-button');
+        const formName = document.getElementById('name');
+        const formAddress = document.getElementById('address');
+        const formNumber = document.getElementById('number');
+        const formComplement = document.getElementById('complement');
+        const paymentRadios = document.querySelectorAll('input[name="payment"]');
+        const changeOptionDiv = document.getElementById('change-option');
+        const changeInput = document.getElementById('change-for');
+        const changeCalculationDiv = document.getElementById('change-calculation');
+        const pixInfoDiv = document.getElementById('pix-info');
+
+        let currentTotal = 0;
+        let isStockFilterActive = false;
+        
+        // --- FUNÇÕES DE API E ESTOQUE ---
+        async function loadInventory() {
+            if (!SCRIPT_API_URL.includes("macros.google.com")) {
+                alert("URL da API não configurada. Edite o arquivo index.html e insira a URL do seu App Script.");
+                loadingOverlay.innerHTML = "<p class='text-red-600 font-bold'>Erro: API não configurada.</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(SCRIPT_API_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro na rede: ${response.statusText}`);
+                }
+                const stockData = await response.json();
+
+                if (stockData.error) {
+                    throw new Error(`Erro no script da API: ${stockData.error}`);
+                }
+                
+                for (const category in menuData) {
+                    menuData[category].forEach(item => {
+                        if (stockData[item.name] !== undefined) {
+                            item.stock = parseInt(stockData[item.name], 10) || 0;
+                        } else {
+                            item.stock = 0;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao buscar o estoque:", error);
+                alert("Não foi possível carregar o estoque. O cardápio será exibido como 'sem estoque'. Tente recarregar a página.");
+            } finally {
+                loadingOverlay.style.display = 'none';
+                renderMenu();
+                updateTotals();
+            }
+        }
+        
+        async function logOrderToSheet(orderPayload) {
+            try {
+                await fetch(SCRIPT_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar erros de CORS com Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
+            } catch (error) {
+                console.error("Não foi possível registrar o pedido na planilha:", error);
+                // Opcional: informar ao usuário que o pedido foi pro WhatsApp mas não foi salvo no sistema.
+            }
+        }
+
+        // --- FUNÇÕES PRINCIPAIS ---
+        function renderMenu() {
+            menuContainer.innerHTML = '';
+            for (const category in menuData) {
+                const itemsInCategory = menuData[category];
+                const filteredItems = isStockFilterActive ? itemsInCategory.filter(item => item.stock > 0) : itemsInCategory;
+
+                if (filteredItems.length === 0) continue;
+
+                const categoryTitle = document.createElement('h2');
+                categoryTitle.className = 'text-2xl font-bold text-green-800 border-b-2 border-green-200 pb-2 mb-4';
+                categoryTitle.textContent = category;
+                menuContainer.appendChild(categoryTitle);
+
+                const itemsGrid = document.createElement('div');
+                itemsGrid.className = 'grid grid-cols-1 gap-4';
+                
+                filteredItems.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'bg-white p-4 rounded-lg shadow-sm border flex flex-col';
+                    const stockStatusClass = item.stock > 0 ? 'stock-ok' : 'stock-low';
+                    const stockText = item.stock > 0 ? `${item.stock} em estoque` : 'Sem estoque (encomenda)';
+
+                    itemEl.innerHTML = `
+                        <div class="flex items-start justify-between">
+                            <div class="flex-grow pr-4">
+                                <p class="font-semibold text-gray-800">${item.name}</p>
+                                <p class="text-sm text-gray-500">${item.desc}</p>
+                                <p class="text-xs font-bold mt-1 ${stockStatusClass}">${stockText}</p>
+                                <p class="customization-display text-xs text-blue-600 mt-1 font-medium hidden"></p>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <button data-action="decrease" class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold text-lg hover:bg-gray-300 transition">-</button>
+                                <input type="number" class="quantity-input w-12 text-center font-bold bg-transparent" value="0" min="0" max="${item.stock > 0 ? item.stock : 99}" readonly data-name="${item.name}" data-customization="">
+                                <button data-action="increase" class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold text-lg hover:bg-gray-300 transition">+</button>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                             <button data-action="customize" class="text-sm text-green-600 hover:text-green-800 font-semibold">Personalizar</button>
+                        </div>
+                        <div class="customization-input-container hidden w-full mt-2">
+                            <textarea class="form-textarea w-full border-gray-300 rounded-md text-sm transition" rows="2" placeholder="Ex: sem cebola, ponto da carne, etc."></textarea>
+                            <div class="flex justify-end gap-2 mt-2">
+                                <button data-action="cancel-customization" class="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300">Cancelar</button>
+                                <button data-action="save-customization" class="text-xs bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700">Salvar</button>
+                            </div>
+                        </div>
+                    `;
+                    itemsGrid.appendChild(itemEl);
+                });
+                menuContainer.appendChild(itemsGrid);
+            }
+        }
+        
+        // ... (As outras funções como updateTotals, handleMenuClick, etc., podem ser mantidas praticamente as mesmas) ...
+        
+        async function handleOrderButtonClick() {
+            orderButton.disabled = true;
+            orderButton.textContent = 'Processando...';
+            
+            // Validações
+            if (!formName.value.trim() || !formAddress.value.trim() || !formNumber.value.trim()) {
+                alert('Por favor, preencha seu Nome, Endereço e Número para continuar.');
+                orderButton.disabled = false;
+                orderButton.innerHTML = '<svg.../> Fazer Pedido'; // Recomendo simplificar ou salvar o SVG
+                return;
+            }
+            const selectedPayment = document.querySelector('input[name="payment"]:checked');
+            if (!selectedPayment) {
+                alert('Por favor, selecione uma forma de pagamento.');
+                orderButton.disabled = false;
+                orderButton.innerHTML = '<svg.../> Fazer Pedido';
+                return;
+            }
+
+            // --- Montagem dos Dados do Pedido ---
+            let prontaEntregaList = [];
+            let porEncomendaList = [];
+            let stockUpdates = {};
+            let whatsappProntaEntrega = "";
+            let whatsappPorEncomenda = "";
+
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            quantityInputs.forEach(input => {
+                const quantity = parseInt(input.value);
+                if (quantity > 0) {
+                    const itemName = input.dataset.name;
+                    const customization = input.dataset.customization;
+                    const itemData = menuData[Object.keys(menuData).find(cat => menuData[cat].find(i => i.name === itemName))]
+                                        .find(i => i.name === itemName);
+
+                    let itemLine = `${quantity}x ${itemName}`;
+                    if (customization) itemLine += ` (Obs: ${customization})`;
+                    
+                    if (customization || itemData.stock === 0) {
+                        porEncomendaList.push(itemLine);
+                        whatsappPorEncomenda += `- ${itemLine}\n`;
+                    } else {
+                        prontaEntregaList.push(itemLine);
+                        whatsappProntaEntrega += `- ${itemLine}\n`;
+                        stockUpdates[itemName] = itemData.stock - quantity;
+                    }
+                }
+            });
+
+            // --- Payload para a Planilha ---
+            const orderPayload = {
+                customer: {
+                    name: formName.value.trim(),
+                    address: `${formAddress.value.trim()}, ${formNumber.value.trim()}` + (formComplement.value.trim() ? ` - ${formComplement.value.trim()}` : '')
+                },
+                totals: {
+                    totalPrice: totalPriceEl.textContent
+                },
+                payment: {
+                    method: selectedPayment.value
+                },
+                items: {
+                    prontaEntrega: prontaEntregaList,
+                    porEncomenda: porEncomendaList
+                },
+                stockUpdates: stockUpdates
+            };
+            
+            // Envia o pedido para a planilha
+            await logOrderToSheet(orderPayload);
+
+            // --- Mensagem para o WhatsApp ---
+            let message = "Olá, HS Cozinha Caseira! Gostaria de fazer um novo pedido:\n\n";
+            message += "*DADOS PARA ENTREGA:*\n" +
+                       `*Nome:* ${orderPayload.customer.name}\n` +
+                       `*Endereço:* ${orderPayload.customer.address}\n\n`;
+
+            if (whatsappProntaEntrega) {
+                message += "*ITENS A PRONTA ENTREGA (entrega hoje):*\n" + whatsappProntaEntrega + "\n";
+            }
+            if (whatsappPorEncomenda) {
+                message += "*ITENS POR ENCOMENDA (entrega em até 4 dias úteis):*\n" + whatsappPorEncomenda + "\n";
+            }
+            
+            const totalCount = Array.from(quantityInputs).reduce((sum, input) => sum + parseInt(input.value), 0);
+            message += `*Total de Itens:* ${totalCount}\n` +
+                       `*Valor Total:* ${orderPayload.totals.totalPrice}\n\n` +
+                       `*FORMA DE PAGAMENTO:*\n${orderPayload.payment.method}\n`;
+            
+            // Abre o WhatsApp
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Recarrega a página para atualizar o estoque e limpar o carrinho
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+        
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInventory();
+            // Demais listeners
+        });
+        
+        // ... (cole aqui as outras funções auxiliares como updateTotals, handleMenuClick, calculateAndShowChange, etc., pois elas não precisam de grandes mudanças)
+        // Por exemplo:
+        function updateTotals() {
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            let totalCount = 0;
+            quantityInputs.forEach(input => {
+                totalCount += parseInt(input.value);
+            });
+            
+            const pricePerItem = totalCount >= comboMinItems ? priceCombo : priceUnit;
+            currentTotal = totalCount * pricePerItem;
+
+            totalPriceEl.textContent = `R$ ${currentTotal.toFixed(2).replace('.', ',')}`;
+            totalItemsEl.textContent = `${totalCount} item${totalCount !== 1 ? 's' : ''} no carrinho`;
+            
+            orderButton.disabled = totalCount === 0;
+        }
+
+        menuContainer.addEventListener('click', (event) => { /* Cole a função handleMenuClick aqui */ });
+        orderButton.addEventListener('click', handleOrderButtonClick);
+        toggleStockFilterBtn.addEventListener('click', () => {
+            isStockFilterActive = !isStockFilterActive;
+            if (isStockFilterActive) {
+                toggleStockFilterBtn.textContent = 'Mostrar Todos os Itens';
+                toggleStockFilterBtn.classList.replace('bg-amber-500', 'bg-gray-600');
+                toggleStockFilterBtn.classList.replace('hover:bg-amber-600', 'hover:bg-gray-700');
+            } else {
+                toggleStockFilterBtn.textContent = 'Mostrar Apenas Pronta Entrega';
+                toggleStockFilterBtn.classList.replace('bg-gray-600', 'bg-amber-500');
+                 toggleStockFilterBtn.classList.replace('hover:bg-gray-700', 'hover:bg-amber-600');
+            }
+            renderMenu();
+        });
+
+    </script>
+</body>
+</html>
