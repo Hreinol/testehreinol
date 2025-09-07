@@ -207,26 +207,29 @@
         let isStockFilterActive = false;
         
         // --- FUNÇÕES DE API E ESTOQUE ---
-       async function loadInventory() {
-    try {
-        const response = await fetch(SCRIPT_API_URL);
-        const stockData = await response.json();
+      async function loadInventory() {
+  try {
+    const response = await fetch(SCRIPT_API_URL);
+    const stockData = await response.json();
 
-        // Atualiza o 'menuData' local com os dados da planilha
-        for (const category in menuData) {
-            menuData[category].forEach(item => {
-                if (stockData[item.name] !== undefined) {
-                    item.stock = parseInt(stockData[item.name], 10);
-                } else {
-                    item.stock = 0; // Se não estiver na planilha, não tem estoque
-                }
-            });
+    for (const category in menuData) {
+      menuData[category].forEach(item => {
+        if (stockData[item.name] !== undefined) {
+          item.stock = parseInt(stockData[item.name], 10);
+        } else {
+          item.stock = 0;
         }
-        renderMenu(); // Renderiza o menu com o estoque atualizado
-    } catch (error) {
-        console.error("Erro ao buscar o estoque:", error);
-        alert("Não foi possível carregar o estoque. Tente recarregar a página.");
+      });
     }
+
+    renderMenu(); // Atualiza o menu com os dados
+  } catch (error) {
+    console.error("Erro ao buscar o estoque:", error);
+    alert("Não foi possível carregar o estoque.");
+  } finally {
+    // Esconde o overlay de carregamento
+    document.getElementById("loading-overlay").style.display = "none";
+  }
 }
 
         // --- FUNÇÕES PRINCIPAIS ---
@@ -427,3 +430,4 @@
     </script>
 </body>
 </html>
+
